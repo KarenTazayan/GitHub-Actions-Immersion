@@ -1,0 +1,28 @@
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: [ '7.0.x' ]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Install dependencies
+        run: dotnet restore ShoppingApp.sln
+      - name: Build_Solution
+        run: dotnet build ShoppingApp.sln --configuration Release --no-restore
+      - name: Run Integration Tests
+        run: > 
+          dotnet test test/ShoppingApp.Tests --no-restore --verbosity normal --logger trx 
+          --results-directory "IntegrationTestsResults"
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Integration Tests Results
+          path: IntegrationTestsResults
+      - uses: actions/upload-artifact@v3
+        with:
+          name: infrastructure
+          path: ${{ github.workspace }}/**/deploy/*

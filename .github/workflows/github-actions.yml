@@ -1,0 +1,12 @@
+# Starter workflow for GitHub Actions
+# Start with a minimal workflow that you can customize to build and deploy your code.
+
+name: starter-github-workflow
+run-name: ${{ github.actor }} a minimal workflow
+on: [push]
+jobs:
+  job-a:
+    runs-on: ubuntu-latest
+    steps:
+      - name: step-a
+        run: echo "Hello World!"
