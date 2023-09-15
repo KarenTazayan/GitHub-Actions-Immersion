@@ -1,12 +1,166 @@
-# Starter workflow for GitHub Actions
-# Start with a minimal workflow that you can customize to build and deploy your code.
-
-name: starter-github-workflow
-run-name: ${{ github.actor }} a minimal workflow
 on: [push]
+
+env:
+  # Staging 'sa1, sa2 sa3, ...'
+  # s - staging a - advanced => sa
+  nameSuffix: 'sa1'
+  appNamePrefix: 'shoppingapp1'
+
 jobs:
-  job-a:
+  Build_Solution:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: [ '7.0.x' ]
     steps:
-      - name: step-a
-        run: echo "Hello World!"
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Install dependencies
+        run: dotnet restore ShoppingApp.sln
+      - name: Build_Solution
+        run: dotnet build ShoppingApp.sln --configuration Release --no-restore
+      - name: Run Integration Tests
+        run: > 
+          dotnet test test/ShoppingApp.Tests --no-restore --verbosity normal --logger trx 
+          --results-directory "IntegrationTestsResults"
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Integration Tests Results
+          path: IntegrationTestsResults
+##################### Packing Infrastructure Artifacts Stage #####################
+      - uses: actions/upload-artifact@v3
+        with:
+          name: infrastructure
+          path: ${{ github.workspace }}/**/deploy/azure-container-apps
+
+##################### Provision Azure Container Registry Stage #####################
+  Provision_Azure_Container_Registry:
+    needs: Build_Solution
+    runs-on: ubuntu-latest
+    env:
+      resourceGroupName: 'rg-shopping-app-main'
+      location: 'eastus'
+    outputs:
+      acrUrl: ${{ steps.step1.outputs.acrUrl }}
+      acrLogin: ${{ steps.step1.outputs.acrLogin }}
+      acrPassword: ${{ steps.step1.outputs.acrPassword }}
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: 'infrastructure'
+          path: ${{ github.workspace }}/infrastructure
+      - name: Log infrastructure download
+        run: ls -R
+      - name: Log in with Azure
+        uses: azure/login@v1
+        with: 
+          creds: '${{ secrets.AZURE_CREDENTIALS }}'
+      - id: step1
+        name: Azure CLI script
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az --version
+            az group create --name $resourceGroupName --location $location
+            ACR_CREDENTIALS=$(az deployment group create --resource-group $resourceGroupName \
+              --template-file ${{ github.workspace }}/infrastructure/deploy/azure-container-apps/azure-container-registry.bicep \
+              --parameters appNamePrefix=$appNamePrefix --query properties.outputs)
+            # This is a critical security issue. It is for demo purposes only!
+            ACR_URL=$(jq --raw-output '.acrUrl.value' <<< $ACR_CREDENTIALS)
+            ACR_LOGIN=$(jq --raw-output '.acrLogin.value' <<< $ACR_CREDENTIALS)
+            ACR_PASSWORD=$(jq --raw-output '.acrPassword.value' <<< $ACR_CREDENTIALS)
+            echo "Setting ACR_CREDENTIALS for output"
+            echo "ACR credentials is: $ACR_URL $ACR_LOGIN $ACR_PASSWORD"
+            env | sort
+            echo "::set-output name=acrUrl::$ACR_URL"
+            echo "::set-output name=acrLogin::$ACR_LOGIN"
+            echo "::set-output name=acrPassword::$ACR_PASSWORD"
+  
+##################### Publishing Solution Artifacts Stage #####################
+  Publishing_Solution_Artifacts_Stage:
+    runs-on: ubuntu-latest
+    needs: Provision_Azure_Container_Registry
+    outputs:
+      semVer: ${{ steps.step1.outputs.semVer }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v3
+        with:
+          name: 'infrastructure'
+          path: ${{ github.workspace }}/infrastructure
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0
+        with:
+          versionSpec: '6.x'
+          includePrerelease: true
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0
+        with:
+          useConfigFile: true
+          configFilePath: ${{ github.workspace }}/GitVersion.yml
+      - name: 'Login to Azure Container Registry'
+        env:
+          acrUrl: ${{ needs.Provision_Azure_Container_Registry.outputs.acrUrl }}
+          acrLogin: ${{ needs.Provision_Azure_Container_Registry.outputs.acrLogin }}
+          acrPassword: ${{ needs.Provision_Azure_Container_Registry.outputs.acrPassword }}
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.acrUrl }}
+          username: ${{ env.acrLogin }}
+          password: ${{ env.acrPassword }}
+      - name: 'Build and push images to Azure Container Registry'
+        env:
+          acrUrl: ${{ needs.Provision_Azure_Container_Registry.outputs.acrUrl }}
+          acrLogin: ${{ needs.Provision_Azure_Container_Registry.outputs.acrLogin }}
+          acrPassword: ${{ needs.Provision_Azure_Container_Registry.outputs.acrPassword }}    
+        run: |
+          docker build -t "${{ env.acrUrl }}/shoppingapp/silohost:${{ steps.gitversion.outputs.semVer }}" \
+          -f ${{ github.workspace }}/src/ShoppingApp.SiloHost/Dockerfile . \
+          --build-arg assemblyInformationalVersion=${{ steps.gitversion.outputs.informationalVersion }}
+          docker push "${{ env.acrUrl }}/shoppingapp/silohost:${{ steps.gitversion.outputs.semVer }}"
+          docker build -t "${{ env.acrUrl }}/shoppingapp/webui:${{ steps.gitversion.outputs.semVer }}" \
+          -f ${{ github.workspace }}/src/ShoppingApp.WebUI/Dockerfile . \
+          --build-arg assemblyInformationalVersion=${{ steps.gitversion.outputs.informationalVersion }}
+          docker push "${{ env.acrUrl }}/shoppingapp/webui:${{ steps.gitversion.outputs.semVer }}"
+      - id: step1
+        run: echo "::set-output name=semVer::${{ steps.gitversion.outputs.semVer }}"  
+
+##################### Provision Infrastructure Stages #####################
+  Provision_Infrastructure_Stages:
+    runs-on: ubuntu-latest
+    needs: [ Provision_Azure_Container_Registry, Publishing_Solution_Artifacts_Stage ]
+    env:
+      location: 'eastus'
+      acrUrl: ${{ needs.Provision_Azure_Container_Registry.outputs.acrUrl }}
+      acrLogin: ${{ needs.Provision_Azure_Container_Registry.outputs.acrLogin }}
+      acrPassword: ${{ needs.Provision_Azure_Container_Registry.outputs.acrPassword }}
+      semVer: ${{ needs.Publishing_Solution_Artifacts_Stage.outputs.semVer }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: 'infrastructure'
+          path: ${{ github.workspace }}/infrastructure
+      - name: Log in with Azure
+        uses: azure/login@v1
+        with: 
+          creds: '${{ secrets.AZURE_CREDENTIALS }}'
+      - name: Azure CLI script
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az --version
+            AZ_ACCOUNT=$(az account show)
+            servicePrincipalId=$(jq --raw-output '.id' <<< $AZ_ACCOUNT)
+            resourceGroupName='rg-${{ env.appNamePrefix }}'
+            az group create --name $resourceGroupName-${{ env.nameSuffix }} --location ${{ env.location }}
+            DEPLOYMENT_OUTPUT=$(az deployment group create --resource-group $resourceGroupName-${{ env.nameSuffix }} \
+              --template-file ${{ github.workspace }}/infrastructure/deploy/azure-container-apps/solution-infrastructure.bicep \
+              --parameters appNamePrefix='${{ env.appNamePrefix }}' semVer='${{ env.semVer }}' sqlAdministratorPassword='Passw@rd1+' \
+              acrUrl=${{ env.acrUrl }} acrLogin=${{ env.acrLogin }} acrPassword=${{ env.acrPassword }} \
+              executorSecurityPrincipal=$servicePrincipalId --query properties.outputs)
