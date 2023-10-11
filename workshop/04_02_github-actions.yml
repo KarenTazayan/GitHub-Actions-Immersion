@@ -1,0 +1,25 @@
+on: [push]
+jobs:
+  Build_Solution:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: [ '7.0.x' ]
+    env:
+      buildConfiguration: Release
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Install dependencies
+        run: dotnet restore ShoppingApp.sln
+      - name: 'Inspect Code with ReSharper CLI'
+        run: |
+          dotnet tool install -g JetBrains.ReSharper.GlobalTools
+          jb inspectcode ShoppingApp.sln -f="Html;Xml" --profile="ShoppingApp.sln.DotSettings" -o="inspect-code-output" --properties:Configuration=$buildConfiguration
+      - name: 'Analyze ReSharper CLI Results'
+        shell: pwsh
+        run: ./AnalyzeReSharperCLIResults.ps1
+      - name: Build_Solution
+        run: dotnet build ShoppingApp.sln --configuration Release --no-restore

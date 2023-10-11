@@ -1,6 +1,6 @@
 on: [push]
 jobs:
-  build:
+  Build_Solution:
     runs-on: ubuntu-latest
     strategy:
       matrix:
