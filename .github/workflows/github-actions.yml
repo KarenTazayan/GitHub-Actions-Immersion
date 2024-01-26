@@ -1,6 +1,4 @@
-on:
-  pull_request_target:
-    types: [opened, synchronize, reopened]
+on: [push]
 
 env:
   # Staging 'sa1, sa2 sa3, ...'
@@ -19,7 +17,6 @@ jobs:
       - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
-          ref: refs/pull/${{ github.event.pull_request.number }}/merge
       - name: Install dependencies
         run: dotnet restore ShoppingApp.sln
       - name: Build_Solution
@@ -77,9 +74,9 @@ jobs:
             echo "Setting ACR_CREDENTIALS for output"
             echo "ACR credentials is: $ACR_URL $ACR_LOGIN $ACR_PASSWORD"
             env | sort
-            echo "::set-output name=acrUrl::$ACR_URL"
-            echo "::set-output name=acrLogin::$ACR_LOGIN"
-            echo "::set-output name=acrPassword::add-mask::$ACR_PASSWORD"
+            echo "acrUrl=$ACR_URL" >> $GITHUB_OUTPUT
+            echo "acrLogin=$ACR_LOGIN" >> $GITHUB_OUTPUT
+            echo "acrPassword=$ACR_PASSWORD" >> $GITHUB_OUTPUT
   
 ##################### Publishing Solution Artifacts Stage #####################
   Publishing_Solution_Artifacts_Stage:
