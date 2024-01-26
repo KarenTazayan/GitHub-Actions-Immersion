@@ -103,22 +103,23 @@ jobs:
         with:
           useConfigFile: true
           configFilePath: ${{ github.workspace }}/GitVersion.yml
-      - name: 'Login to Azure Container Registry'
-        env:
-          acrUrl: ${{ needs.Provision_Azure_Container_Registry.outputs.acrUrl }}
-          acrLogin: ${{ needs.Provision_Azure_Container_Registry.outputs.acrLogin }}
-          acrPassword: ${{ needs.Provision_Azure_Container_Registry.outputs.acrPassword }}
-        uses: azure/docker-login@v1
-        with:
-          login-server: ${{ env.acrUrl }}
-          username: ${{ env.acrLogin }}
-          password: ${{ env.acrPassword }}
+      # - name: 'Login to Azure Container Registry'
+      #   env:
+      #     acrUrl: ${{ needs.Provision_Azure_Container_Registry.outputs.acrUrl }}
+      #     acrLogin: ${{ needs.Provision_Azure_Container_Registry.outputs.acrLogin }}
+      #     acrPassword: ${{ needs.Provision_Azure_Container_Registry.outputs.acrPassword }}
+      #   uses: azure/docker-login@v1
+      #   with:
+      #     login-server: ${{ env.acrUrl }}
+      #     username: ${{ env.acrLogin }}
+      #     password: ${{ env.acrPassword }}
       - name: 'Build and push images to Azure Container Registry'
         env:
           acrUrl: ${{ needs.Provision_Azure_Container_Registry.outputs.acrUrl }}
           acrLogin: ${{ needs.Provision_Azure_Container_Registry.outputs.acrLogin }}
           acrPassword: ${{ needs.Provision_Azure_Container_Registry.outputs.acrPassword }}    
         run: |
+          az acr login --name ${{ env.acrUrl }}
           docker build -t "${{ env.acrUrl }}/shoppingapp/silohost:${{ steps.gitversion.outputs.semVer }}" \
           -f ${{ github.workspace }}/src/ShoppingApp.SiloHost/Dockerfile . \
           --build-arg assemblyInformationalVersion=${{ steps.gitversion.outputs.informationalVersion }}
