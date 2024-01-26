@@ -10,8 +10,8 @@ wsl
 ### How to shrink a virtual hard disk file (vhdx) of WSL2 in Windows 10/11?
 ```
 diskpart
-select vhdx file=C:\Users\U1\AppData\Local\Packages\CanonicalGroupLimited.Ubuntu20.04onWindows_79rhkp1fndgsc\LocalState\ext4.vhdx
-compact vhdx
+select vdisk file=C:\Users\U1\AppData\Local\Packages\CanonicalGroupLimited.Ubuntu20.04onWindows_79rhkp1fndgsc\LocalState\ext4.vhdx
+compact vdisk
 ```
 ### How to login to Docker Hub by command line?
 ```
@@ -21,4 +21,9 @@ sudo docker login -u [user-name] --password-stdin [password]
 ```
 sudo docker tag [image id] [account or namespace]/azure-pipelines-agents-debian-10.13:19092023
 sudo docker push [account or namespace]/azure-pipelines-agents-debian-10.13:19092023
+```
+### How to run container on WSL2?
+```
+sudo docker build -f src/ShoppingApp.WebUI/Dockerfile . -t webuilocal
+sudo docker run -p 8080:80 -t webuilocal
 ```
