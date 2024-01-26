@@ -76,7 +76,7 @@ jobs:
             env | sort
             echo "::set-output name=acrUrl::$ACR_URL"
             echo "::set-output name=acrLogin::$ACR_LOGIN"
-            echo "::set-output name=acrPassword::$ACR_PASSWORD"
+            echo "::set-output name=acrPassword::add-mask::$ACR_PASSWORD"
   
 ##################### Publishing Solution Artifacts Stage #####################
   Publishing_Solution_Artifacts_Stage:
