@@ -290,6 +290,9 @@ resource shoppingAppCae 'Microsoft.App/managedEnvironments@2022-10-01' = {
 resource siloHostCa 'Microsoft.App/containerApps@2022-10-01' = {
   name: siloHostCaName
   location: location
+  dependsOn: [
+    acr
+  ]
   properties: {
     managedEnvironmentId: shoppingAppCae.id
     configuration: {
@@ -354,6 +357,9 @@ resource webUiCa 'Microsoft.App/containerApps@2022-10-01' = {
   identity: {
     type: 'SystemAssigned'
   }
+  dependsOn: [
+    acr
+  ]
   properties: {
     managedEnvironmentId: shoppingAppCae.id
     configuration: {
