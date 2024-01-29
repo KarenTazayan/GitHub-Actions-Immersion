@@ -44,6 +44,7 @@ jobs:
       location: 'eastus'
     outputs:
       acrName: ${{ steps.step1.outputs.acrName }}
+      acrResourceGroupName: ${{ env.resourceGroupName }}
       acrUrl: ${{ steps.step1.outputs.acrUrl }}
     steps:
       - uses: actions/download-artifact@v3
@@ -81,6 +82,10 @@ jobs:
     needs: Provision_Azure_Container_Registry
     outputs:
       semVer: ${{ steps.step1.outputs.semVer }}
+    env:
+      acrUrl: ${{ needs.Provision_Azure_Container_Registry.outputs.acrUrl }}
+      #semVer: ${{ steps.gitversion.outputs.semVer }}
+      semVer: 0.0.3  
     steps:
       - uses: actions/checkout@v3
         with:
@@ -105,10 +110,6 @@ jobs:
         with: 
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
       - name: 'Build and push images to Azure Container Registry'
-        env:
-          acrUrl: ${{ needs.Provision_Azure_Container_Registry.outputs.acrUrl }}
-          #semVer: ${{ steps.gitversion.outputs.semVer }}
-          semVer: 0.0.2  
         run: |
           az acr login --name ${{ env.acrUrl }}
           docker build -t "${{ env.acrUrl }}/shoppingapp/silohost:${{ env.semVer }}" \
@@ -131,9 +132,8 @@ jobs:
     env:
       location: 'eastus'
       acrName: ${{ needs.Provision_Azure_Container_Registry.outputs.acrName }}
+      acrResourceGroupName: ${{ needs.Provision_Azure_Container_Registry.outputs.acrResourceGroupName }}
       acrUrl: ${{ needs.Provision_Azure_Container_Registry.outputs.acrUrl }}
-      # acrLogin: ${{ needs.Provision_Azure_Container_Registry.outputs.acrLogin }}
-      # acrPassword: ${{ needs.Provision_Azure_Container_Registry.outputs.acrPassword }}
       semVer: ${{ needs.Publishing_Solution_Artifacts_Stage.outputs.semVer }}
     steps:
       - uses: actions/checkout@v3
@@ -157,5 +157,5 @@ jobs:
             DEPLOYMENT_OUTPUT=$(az deployment group create --resource-group $resourceGroupName-${{ env.nameSuffix }} \
               --template-file ${{ github.workspace }}/infrastructure/deploy/azure-container-apps/solution-infrastructure.bicep \
               --parameters appNamePrefix='${{ env.appNamePrefix }}' semVer='${{ env.semVer }}' sqlAdministratorPassword='Passw@rd1+' \
-              acrName=${{ env.acrName }} acrUrl=${{ env.acrUrl }} \
+              acrName=${{ env.acrName }} acrUrl=${{ env.acrUrl }} acrResourceGroupName=${{ env.acrResourceGroupName }} \
               executorSecurityPrincipal=$servicePrincipalId --query properties.outputs)

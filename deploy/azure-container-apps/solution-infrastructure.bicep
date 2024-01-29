@@ -11,12 +11,9 @@ param sqlAdministratorLogin string = 'sq'
 param sqlAdministratorPassword string
 
 // Azure Container Registry
+param acrResourceGroupName string
 param acrName string
 param acrUrl string
-// @secure()
-// param acrLogin string
-// @secure()
-// param acrPassword string
 
 // General
 var vnetName = 'vnet-${appNamePrefix}-${nameSuffix}'
@@ -44,7 +41,7 @@ var tags = {
 
 resource acr 'Microsoft.ContainerRegistry/registries@2022-12-01' existing = {
   name: acrName
-  scope: resourceGroup('rg-shopping-app-main')
+  scope: resourceGroup(acrResourceGroupName)
 }
 
 resource loadTest 'Microsoft.LoadTestService/loadTests@2022-12-01' = {

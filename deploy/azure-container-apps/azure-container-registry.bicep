@@ -25,9 +25,3 @@ resource acr 'Microsoft.ContainerRegistry/registries@2022-12-01' = {
 
 output acrName string = acrName
 output acrUrl string = acr.properties.loginServer
-// // This is a critical security issue. It is for demo purposes only!
-// #disable-next-line outputs-should-not-contain-secrets
-// output acrLogin string = acr.listCredentials().username
-// // This is a critical security issue. It is for demo purposes only!
-// #disable-next-line outputs-should-not-contain-secrets
-// output acrPassword string = acr.listCredentials().passwords[0].value
