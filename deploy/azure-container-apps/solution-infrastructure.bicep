@@ -44,6 +44,7 @@ var tags = {
 
 resource acr 'Microsoft.ContainerRegistry/registries@2022-12-01' existing = {
   name: acrName
+  scope: resourceGroup('rg-shopping-app-main')
 }
 
 resource loadTest 'Microsoft.LoadTestService/loadTests@2022-12-01' = {
