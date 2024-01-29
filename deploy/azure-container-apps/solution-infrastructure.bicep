@@ -11,11 +11,12 @@ param sqlAdministratorLogin string = 'sq'
 param sqlAdministratorPassword string
 
 // Azure Container Registry
+param acrName string
 param acrUrl string
-@secure()
-param acrLogin string
-@secure()
-param acrPassword string
+// @secure()
+// param acrLogin string
+// @secure()
+// param acrPassword string
 
 // General
 var vnetName = 'vnet-${appNamePrefix}-${nameSuffix}'
@@ -39,6 +40,10 @@ var webUiCaName = 'ctap-${appNamePrefix}-ui-${nameSuffix}'
 
 var tags = {
   Purpose: 'Tuning Blazor Server'
+}
+
+resource acr 'Microsoft.ContainerRegistry/registries@2022-12-01' existing = {
+  name: acrName
 }
 
 resource loadTest 'Microsoft.LoadTestService/loadTests@2022-12-01' = {
@@ -292,13 +297,13 @@ resource siloHostCa 'Microsoft.App/containerApps@2022-10-01' = {
       secrets: [
         {
           name: 'acr-password'
-          value: acrPassword
+          value: acr.listCredentials().passwords[0].value
         }
       ]
       registries: [
         {
           server: acrUrl
-          username: acrLogin
+          username: acr.listCredentials().username
           passwordSecretRef: 'acr-password'
         }
       ]
@@ -356,13 +361,13 @@ resource webUiCa 'Microsoft.App/containerApps@2022-10-01' = {
       secrets: [
         {
           name: 'acr-password'
-          value: acrPassword
+          value: acr.listCredentials().passwords[0].value
         }
       ]
       registries: [
         {
           server: acrUrl
-          username: acrLogin
+          username: acr.listCredentials().username
           passwordSecretRef: 'acr-password'
         }
       ]
