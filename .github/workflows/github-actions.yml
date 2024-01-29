@@ -29,7 +29,7 @@ jobs:
         with:
           name: Integration Tests Results
           path: IntegrationTestsResults
-##################### Packing Infrastructure Artifacts Stage #####################
+      # Packing Infrastructure Artifacts Stage
       - uses: actions/upload-artifact@v3
         with:
           name: infrastructure
@@ -84,8 +84,6 @@ jobs:
       semVer: ${{ steps.step1.outputs.semVer }}
     env:
       acrUrl: ${{ needs.Provision_Azure_Container_Registry.outputs.acrUrl }}
-      #semVer: ${{ steps.gitversion.outputs.semVer }}
-      semVer: 0.0.3  
     steps:
       - uses: actions/checkout@v3
         with:
@@ -110,6 +108,10 @@ jobs:
         with: 
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
       - name: 'Build and push images to Azure Container Registry'
+        id: step1
+        env:
+          acrUrl: ${{ needs.Provision_Azure_Container_Registry.outputs.acrUrl }}
+          semVer: ${{ steps.gitversion.outputs.semVer }} 
         run: |
           az acr login --name ${{ env.acrUrl }}
           docker build -t "${{ env.acrUrl }}/shoppingapp/silohost:${{ env.semVer }}" \
@@ -120,8 +122,6 @@ jobs:
           -f ${{ github.workspace }}/src/ShoppingApp.WebUI/Dockerfile . \
           --build-arg assemblyInformationalVersion=${{ steps.gitversion.outputs.informationalVersion }}
           docker push "${{ env.acrUrl }}/shoppingapp/webui:${{ env.semVer }}"
-      - id: step1
-        run: |
           echo "Setting semVer for output"
           echo "semVer=${{ env.semVer }}" >> $GITHUB_OUTPUT
 
