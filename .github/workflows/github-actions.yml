@@ -113,20 +113,24 @@ jobs:
       - name: 'Build and push images to Azure Container Registry'
         env:
           acrUrl: ${{ needs.Provision_Azure_Container_Registry.outputs.acrUrl }}
+          #semVer: ${{ steps.gitversion.outputs.semVer }}
+          semVer: 0.0.1
           # acrLogin: ${{ needs.Provision_Azure_Container_Registry.outputs.acrLogin }}
           # acrPassword: ${{ needs.Provision_Azure_Container_Registry.outputs.acrPassword }}    
         run: |
           az acr login --name ${{ env.acrUrl }}
-          docker build -t "${{ env.acrUrl }}/shoppingapp/silohost:${{ steps.gitversion.outputs.semVer }}" \
+          docker build -t "${{ env.acrUrl }}/shoppingapp/silohost:${{ env.semVer }}" \
           -f ${{ github.workspace }}/src/ShoppingApp.SiloHost/Dockerfile . \
           --build-arg assemblyInformationalVersion=${{ steps.gitversion.outputs.informationalVersion }}
-          docker push "${{ env.acrUrl }}/shoppingapp/silohost:${{ steps.gitversion.outputs.semVer }}"
-          docker build -t "${{ env.acrUrl }}/shoppingapp/webui:${{ steps.gitversion.outputs.semVer }}" \
+          docker push "${{ env.acrUrl }}/shoppingapp/silohost:${{ env.semVer }}"
+          docker build -t "${{ env.acrUrl }}/shoppingapp/webui:${{ env.semVer }}" \
           -f ${{ github.workspace }}/src/ShoppingApp.WebUI/Dockerfile . \
           --build-arg assemblyInformationalVersion=${{ steps.gitversion.outputs.informationalVersion }}
-          docker push "${{ env.acrUrl }}/shoppingapp/webui:${{ steps.gitversion.outputs.semVer }}"
+          docker push "${{ env.acrUrl }}/shoppingapp/webui:${{ env.semVer }}"
       - id: step1
-        run: echo "::set-output name=semVer::${{ steps.gitversion.outputs.semVer }}"  
+        run: |
+          echo "Setting semVer for output"
+          echo "semVer=${{ env.semVer }}" >> $GITHUB_OUTPUT
 
 ##################### Provision Infrastructure Stages #####################
   Provision_Infrastructure_Stages:
