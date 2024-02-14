@@ -1,6 +1,97 @@
 ## GitHub Actions Immersion
 
-### 1. Use GitHub Actions to connect to Azure.
+This guidline provide detailed steps to orgnize fully automated GitHub Actions workflows for the sample solution based on Blazor Server model which works on .NET 8 and Microsoft Orleans 8. It mostly uses the following services: Azure Container Apps, Azure SignalR Service, Azure Key Vault, Azure Storage Account, Azure Application Insights, Azure Load Testing, Azure DevOps and many more.
+
+### 1. Create an GitHub repo for the solution.
+
+1. Open GitHub portal : https://github.com/
+2. Create a new public repository (skip quick setup, the repository must be uninitialized). A sample name: **github-actions-immersion-1**
+3. Import existing repository (choose the option: …or import code from another repository): https://github.com/KarenTazayan/GitHub-Actions-Immersion.git
+   
+### 2. Install Docker Desktop on your machine.
+
+Install [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/) on operation system which you are using.  
+
+>Attention! The next steps below (till section 3) are optional.
+
+If you are using Windows 11 or Windows 10 it is more appropriate to use WSL 2 and install Docker Desktop on Ubuntu-22.04.
+
+What are required for this?  
+> - Microsoft Azure Subscription, [you can create a free account](https://azure.microsoft.com/en-us/free/) if you don't have any.
+> - [Windows machine with virtualization technology (AMD-V / Intel VT-x)](https://learn.microsoft.com/en-us/virtualization/hyper-v-on-windows/user-guide/nested-virtualization)
+>   - Windows Server 2016/Windows 10 or greater for Intel processor with VT-x
+>   - Windows Server 2022/Windows 11 or greater AMD EPYC/Ryzen processor
+
+Open terminal enable WSL 2 and install Ubuntu-22.04 with the following command. 
+```
+wsl --install -d Ubuntu-22.04
+```
+Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/) on Ubuntu.
+```
+$ sudo apt-get update
+$ sudo apt-get install ca-certificates curl
+$ sudo install -m 0755 -d /etc/apt/keyrings
+$ sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+$ sudo chmod a+r /etc/apt/keyrings/docker.asc
+$ echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+$ sudo apt-get update
+$ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+Start Docker service.
+```
+sudo service docker start
+sudo service docker status
+```
+You can clone the solution you have imported https://github.com/DevOpsImmersion/github-actions-immersion-1.git into C:\ drive on your Windows machine ([Git CLI](https://git-scm.com/download/win) is required)
+```
+mkdir C:\Repos
+cd C:\Repos
+git clone https://github.com/DevOpsImmersion/github-actions-immersion-1.git
+```
+and interop with it from Ubuntu-22.04 by the following way:
+```
+$ cd /mnt/c/Repos/github-actions-immersion-1/build/self-hosted-runners/debian-12.2/
+$ sudo docker build -t github-actions-runner-debian-12.2:14022024 .
+```
+
+### 3. Create a self-hosted runner.
+
+Build a runner docker image by using files from "build\self-hosted-runners" based on Debian image
+```
+$ sudo docker build -t github-actions-runner-debian-12.2:14022024 .
+```
+or on Playwright image.
+```
+$ sudo docker build -t github-actions-runner-playwright-1.41.0:14022024 .
+```
+Create [Fine-grained personal access token](https://github.com/settings/tokens). Or if you use an organization please 
+install [GitHub CLI](https://cli.github.com/) and [use the following script](https://docs.github.com/en/rest/actions/self-hosted-runners?apiVersion=2022-11-28#create-a-registration-token-for-an-organization):
+PowerShell
+```
+gh auth login -h github.com -s admin:org
+gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" `
+  /orgs/PUT_YOUR_ORG_NAME_HERE/actions/runners/registration-token
+```
+Bash
+```
+gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" \
+  /orgs/PUT_YOUR_ORG_NAME_HERE/actions/runners/registration-token
+```
+Run Debian or Playwright based runner by using the following command:
+```
+sudo docker run -v /var/run/docker.sock:/var/run/docker.sock \
+    -e GITHUB_ORG_URL=https://github.com/<organization name> \
+    -e GITHUB_RUNNER_NAME=01_Debian-12.2 \
+    -e GITHUB_ORG_TOKEN=<TOKEN> --name 01_Debian-12.2 github-actions-runner-debian-12.2:14022024
+```
+The syntax above uses PowerShell. If you use Bash shell, just replace "`" (backtick) with "\\" (backslash).  
+  
+>Warning! Doing Docker within a Docker by using Docker socket has serious security implications. The code inside the container can now run as root on your Docker host. Please be very careful.
+
+### 4. Use GitHub Actions to connect to Azure.
 
 Use your existing Microsoft Azure Subscription, [you can create a free account](https://azure.microsoft.com/en-us/free/) if you don't have any.  
 By using Azure CLI create a service principal and configure its access to Azure resources. To retrieve current subscription ID, run:  
@@ -29,4 +120,4 @@ Make a new JSON object with values from the previous object:
     "tenantId": "Replace with tenant value"
 }
 ```
-Add the JSON [as a GitHub secret](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure) with replaced values (GitHub-Actions-Immersion-1), required name: **AZURE_CREDENTIALS**.
+Add the JSON [as a GitHub secret](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure) with replaced values, required name: **AZURE_CREDENTIALS**.

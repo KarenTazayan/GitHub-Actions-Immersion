@@ -1,15 +1,11 @@
+run-name: Build Solution
+
 on: [push]
 jobs:
   Build_Solution:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dotnet-version: [ '8.0.x' ]
+    runs-on: [self-hosted, dotnet]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: ${{ matrix.dotnet-version }}
       - name: Install dependencies
         run: dotnet restore ShoppingApp.sln
       - name: Build_Solution
