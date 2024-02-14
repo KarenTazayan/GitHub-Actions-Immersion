@@ -9,9 +9,6 @@ env:
 jobs:
   Build_Solution:
     runs-on: [self-hosted, dotnet]
-    strategy:
-      matrix:
-        dotnet-version: [ '8.0.x' ]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v3

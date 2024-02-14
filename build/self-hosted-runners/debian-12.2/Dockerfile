@@ -60,9 +60,9 @@ ENV TARGETARCH=linux-x64
 WORKDIR /acr
 
 # Download the latest runner package
-RUN curl -o actions-runner-linux-x64-2.312.0.tar.gz \
-  -L https://github.com/actions/runner/releases/download/v2.312.0/actions-runner-linux-x64-2.312.0.tar.gz
-RUN tar xzf ./actions-runner-linux-x64-2.312.0.tar.gz
+RUN curl -o actions-runner-linux-x64-2.313.0.tar.gz \
+  -L https://github.com/actions/runner/releases/download/v2.313.0/actions-runner-linux-x64-2.313.0.tar.gz
+RUN tar xzf ./actions-runner-linux-x64-2.313.0.tar.gz
 
 # Run a self-hosted Azure Pipelines agent in Docker
 COPY ./start.sh .

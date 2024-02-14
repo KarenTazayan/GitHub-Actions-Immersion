@@ -25,15 +25,7 @@ print_header() {
 cleanup() {
   if [ -e config.sh ]; then
     print_header "Cleanup. Removing Actions Runner..."
-
-    # If the agent has some running jobs, the configuration removal process will fail.
-    # So, give it some time to finish the job.
-    while true; do
-      ./config.sh remove --token ${GITHUB_ORG_TOKEN}
-
-      echo "Retrying in 30 seconds..."
-      sleep 30
-    done
+    ./config.sh remove --token ${GITHUB_ORG_TOKEN}
   fi
 }
 

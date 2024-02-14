@@ -35,4 +35,8 @@
     <ProjectReference Include="..\..\src\ShoppingApp.Grains\ShoppingApp.Grains.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="8.0.200" />
+  </ItemGroup>
+
 </Project>

@@ -6,14 +6,8 @@ env:
 jobs:
   Build_Solution:
     runs-on: [self-hosted, dotnet]
-    strategy:
-      matrix:
-        dotnet-version: [ '8.0.x' ]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: ${{ matrix.dotnet-version }}
       - name: Install dependencies
         run: dotnet restore ShoppingApp.sln
       - name: Build_Solution
@@ -121,11 +115,13 @@ jobs:
           echo "semVer=${{ env.semVer }}" >> $GITHUB_OUTPUT
 
 ##################### Provision Infrastructure Stages #####################
-  deployment:
+  Provision_Staging_Infrastructure:
     environment:
       name: 'Staging'
     runs-on: [self-hosted, azure-cli]
     needs: [ Provision_Azure_Container_Registry, Publishing_Solution_Artifacts ]
+    outputs:
+      webUiCaUrl: ${{ steps.step1.outputs.webUiCaUrl }}
     env:
       # Staging 'sa1, sa2 sa3, ...'
       # s - staging a - advanced => sa
@@ -146,14 +142,18 @@ jobs:
         with: 
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
       - name: Provision Infrastructure
+        id: step1
         run: |
           az --version
           AZ_ACCOUNT=$(az account show)
           servicePrincipalId=$(jq --raw-output '.id' <<< $AZ_ACCOUNT)
-          resourceGroupName='rg-${{ env.appNamePrefix }}'
-          az group create --name $resourceGroupName-${{ env.nameSuffix }} --location ${{ env.location }}
-          DEPLOYMENT_OUTPUT=$(az deployment group create --resource-group $resourceGroupName-${{ env.nameSuffix }} \
+          resourceGroupName='rg-${{ env.appNamePrefix }}-${{ env.nameSuffix }}'
+          az group create --name $resourceGroupName --location ${{ env.location }}
+          DEPLOYMENT_OUTPUT=$(az deployment group create --resource-group $resourceGroupName \
             --template-file ${{ github.workspace }}/infrastructure/deploy/azure-container-apps/solution-infrastructure.bicep \
-            --parameters appNamePrefix='${{ env.appNamePrefix }}' semVer='${{ env.semVer }}' sqlAdministratorPassword='Passw@rd1+' \
-            acrName=${{ env.acrName }} acrUrl=${{ env.acrUrl }} acrResourceGroupName=${{ env.acrResourceGroupName }} \
-            executorSecurityPrincipal=$servicePrincipalId --query properties.outputs)
+            --parameters appNamePrefix='${{ env.appNamePrefix }}' nameSuffix='${{ env.nameSuffix }}' semVer='${{ env.semVer }}' \
+            sqlAdministratorPassword='Passw@rd1+' acrName=${{ env.acrName }} acrUrl=${{ env.acrUrl }} \
+            acrResourceGroupName=${{ env.acrResourceGroupName }} executorSecurityPrincipal=$servicePrincipalId \
+            --query properties.outputs)
+          WEBUI_CA_URL=$(jq --raw-output '.webUiCaUrl.value' <<< $DEPLOYMENT_OUTPUT)
+          echo "webUiCaUrl=$WEBUI_CA_URL" >> $GITHUB_OUTPUT

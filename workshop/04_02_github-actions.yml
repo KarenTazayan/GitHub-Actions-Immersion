@@ -1,22 +1,19 @@
+run-name: Analyze ReSharper CLI Results
+
 on: [push]
 jobs:
   Build_Solution:
     runs-on: [self-hosted, dotnet]
-    strategy:
-      matrix:
-        dotnet-version: [ '8.0.x' ]
     env:
       buildConfiguration: Release
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: ${{ matrix.dotnet-version }}
       - name: Install dependencies
         run: dotnet restore ShoppingApp.sln
+      - name: Install ReSharper CLI
+        run: dotnet tool update -g JetBrains.ReSharper.GlobalTools
       - name: 'Inspect Code with ReSharper CLI'
         run: |
-          dotnet tool install -g JetBrains.ReSharper.GlobalTools
           jb inspectcode ShoppingApp.sln -f="Html;Xml" --profile="ShoppingApp.sln.DotSettings" -o="inspect-code-output" --properties:Configuration=$buildConfiguration
       - name: 'Analyze ReSharper CLI Results'
         shell: pwsh
