@@ -3,7 +3,7 @@ run-name: Analyze ReSharper CLI Results
 on: [push]
 jobs:
   Build_Solution:
-    runs-on: [self-hosted, dotnet]
+    runs-on: [self-hosted, dotnet, resharper-cli]
     env:
       buildConfiguration: Release
     steps:
@@ -14,7 +14,9 @@ jobs:
         run: dotnet tool update -g JetBrains.ReSharper.GlobalTools
       - name: 'Inspect Code with ReSharper CLI'
         run: |
-          jb inspectcode ShoppingApp.sln -f="Html;Xml" --profile="ShoppingApp.sln.DotSettings" -o="inspect-code-output" --properties:Configuration=$buildConfiguration
+          export PATH=$PATH:/resharpercli
+          jb inspectcode ShoppingApp.sln -f="Html;Xml" --profile="ShoppingApp.sln.DotSettings" \
+            -o="inspect-code-output" --properties:Configuration=$buildConfiguration
       - name: 'Analyze ReSharper CLI Results'
         shell: pwsh
         run: ./AnalyzeReSharperCLIResults.ps1

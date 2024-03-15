@@ -1,3 +1,5 @@
+run-name: Packing Infrastructure Artifacts
+
 on: [push]
 jobs:
   Build_Solution:

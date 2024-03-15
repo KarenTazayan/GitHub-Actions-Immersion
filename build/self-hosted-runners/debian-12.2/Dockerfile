@@ -1,6 +1,6 @@
 FROM debian:12.2-slim
 
-ENV GITHUB_RUNNER_LABELS="azure-cli,dotnet"
+ENV GITHUB_RUNNER_LABELS="azure-cli,dotnet,resharper-cli"
 ENV GITHUB_RUNNER_GROUP="Default"
 ENV GITHUB_RUNNER_WORKDIR="_work"
 

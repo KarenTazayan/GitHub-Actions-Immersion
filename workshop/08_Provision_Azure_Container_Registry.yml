@@ -1,3 +1,5 @@
+run-name: Provision Azure Container Registry
+
 on: [push]
 
 env:

@@ -70,7 +70,7 @@ $ sudo docker build -t github-actions-runner-debian-12.2:15032024 .
 ```
 or on Playwright image.
 ```
-$ sudo docker build -t github-actions-runner-playwright-1.42.1:15032024 .
+$ sudo docker build -t github-actions-runner-playwright-1.42.0:15032024 .
 ```
 Create [Fine-grained personal access token](https://github.com/settings/tokens). Or if you use an organization please 
 install [GitHub CLI](https://cli.github.com/) and [use the following script](https://docs.github.com/en/rest/actions/self-hosted-runners?apiVersion=2022-11-28#create-a-registration-token-for-an-organization):

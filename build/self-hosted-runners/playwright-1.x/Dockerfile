@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright/python:v1.42.1-focal
+FROM mcr.microsoft.com/playwright/python:v1.42.0-focal
 
 ENV GITHUB_RUNNER_LABELS="playwright-1.x,dotnet"
 ENV GITHUB_RUNNER_GROUP="Default"
