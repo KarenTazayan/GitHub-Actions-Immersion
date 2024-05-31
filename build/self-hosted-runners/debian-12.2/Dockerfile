@@ -35,7 +35,7 @@ RUN rm packages-microsoft-prod.deb
 RUN apt-get update && apt-get install -y dotnet-sdk-8.0
 
 # https://blog.jetbrains.com/dotnet/2020/07/16/resharper-command-line-tools-cross-platform-and-global-tools/#usage-as-global-tools
-RUN dotnet tool install JetBrains.ReSharper.GlobalTools --tool-path /resharpercli --version 2023.3.4
+RUN dotnet tool install JetBrains.ReSharper.GlobalTools --tool-path /resharpercli --version 2024.1.2
 
 # Install PowerShell
 RUN apt-get install -y powershell
@@ -60,9 +60,9 @@ ENV TARGETARCH=linux-x64
 WORKDIR /acr
 
 # Download the latest runner package
-RUN curl -o actions-runner-linux-x64-2.314.1.tar.gz \
-  -L https://github.com/actions/runner/releases/download/v2.314.1/actions-runner-linux-x64-2.314.1.tar.gz
-RUN tar xzf ./actions-runner-linux-x64-2.314.1.tar.gz
+RUN curl -o actions-runner-linux-x64-2.317.0.tar.gz \
+  -L https://github.com/actions/runner/releases/download/v2.317.0/actions-runner-linux-x64-2.317.0.tar.gz
+RUN tar xzf ./actions-runner-linux-x64-2.317.0.tar.gz
 
 # Run a self-hosted Azure Pipelines agent in Docker
 COPY ./start.sh .
