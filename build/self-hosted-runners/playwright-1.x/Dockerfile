@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright/python:v1.44.0-jammy
+FROM mcr.microsoft.com/playwright/python:v1.45.0-jammy
 
 ENV GITHUB_RUNNER_LABELS="playwright-1.x,dotnet"
 ENV GITHUB_RUNNER_GROUP="Default"

@@ -61,6 +61,10 @@ jobs:
           # Retrieve the output values from the deployment
           ACR_NAME=$(jq --raw-output '.acrName.value' <<< $ACR_CREDENTIALS)
           ACR_URL=$(jq --raw-output '.acrUrl.value' <<< $ACR_CREDENTIALS)
+          if [[ -z $ACR_URL ]]; then
+            echo "Error: ACR_URL is empty"
+            exit 1
+          fi
           echo "Setting ACR_CREDENTIALS for output"
           echo "ACR credentials is: $ACR_NAME $ACR_URL"
           env | sort

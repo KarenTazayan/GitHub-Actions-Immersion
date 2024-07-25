@@ -60,18 +60,18 @@ git clone https://github.com/DevOpsImmersion/github-actions-immersion-1.git
 and interop with it from Ubuntu-22.04 by the following way:
 ```
 $ cd /mnt/c/Repos/github-actions-immersion-1/build/self-hosted-runners/debian-12.2/
-$ sudo docker build -t github-actions-runner-debian-12.2:31052024 .
+$ sudo docker build -t github-actions-runner-debian-12.2:23072024 .
 ```
 
 ### 3. Create a self-hosted runner.
 
 Build a runner docker image by using files from "build\self-hosted-runners" based on Debian image
 ```
-$ sudo docker build -t github-actions-runner-debian-12.2:31052024 .
+$ sudo docker build -t github-actions-runner-debian-12.2:23072024 .
 ```
 or on Playwright image.
 ```
-$ sudo docker build -t github-actions-runner-playwright-1.x:1.44.0.31052024 .
+$ sudo docker build -t github-actions-runner-playwright-1.x:1.45.0.23072024 .
 ```
 Create [Fine-grained personal access token](https://github.com/settings/tokens). Or if you use an organization please 
 install [GitHub CLI](https://cli.github.com/) and [use the following script](https://docs.github.com/en/rest/actions/self-hosted-runners?apiVersion=2022-11-28#create-a-registration-token-for-an-organization):
@@ -91,7 +91,7 @@ Run Debian or Playwright based runner by using the following command:
 sudo docker run -v /var/run/docker.sock:/var/run/docker.sock \
     -e GITHUB_ORG_URL=https://github.com/<organization name> \
     -e GITHUB_RUNNER_NAME=01_Debian-12.2 \
-    -e GITHUB_ORG_TOKEN=<TOKEN> --name 01_Debian-12.2 github-actions-runner-debian-12.2:31052024
+    -e GITHUB_ORG_TOKEN=<TOKEN> --name 01_Debian-12.2 github-actions-runner-debian-12.2:23072024
 ```
 The syntax above uses PowerShell. If you use Bash shell, just replace "`" (backtick) with "\\" (backslash).  
   
