@@ -37,7 +37,7 @@ jobs:
     runs-on: [self-hosted, azure-cli]
     env:
       resourceGroupName: 'rg-shopping-app-main'
-      location: 'eastus'
+      location: 'francecentral'
     outputs:
       acrName: ${{ steps.step1.outputs.acrName }}
       acrResourceGroupName: ${{ env.resourceGroupName }}
@@ -91,13 +91,13 @@ jobs:
           name: 'infrastructure'
           path: ${{ github.workspace }}/infrastructure
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v0
+        uses: gittools/actions/gitversion/setup@v3.0.3
         with:
           versionSpec: '6.x'
           includePrerelease: true
       - name: Determine Version
         id: gitversion
-        uses: gittools/actions/gitversion/execute@v0
+        uses: gittools/actions/gitversion/execute@v3.0.3
         with:
           useConfigFile: true
           configFilePath: ${{ github.workspace }}/GitVersion.yml

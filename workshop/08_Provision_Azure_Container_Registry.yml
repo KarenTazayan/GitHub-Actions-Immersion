@@ -40,7 +40,7 @@ jobs:
     runs-on: [self-hosted, azure-cli]
     env:
       resourceGroupName: 'rg-shopping-app-main'
-      location: 'eastus'
+      location: 'francecentral'
     outputs:
       acrName: ${{ steps.step1.outputs.acrName }}
       acrResourceGroupName: ${{ env.resourceGroupName }}
