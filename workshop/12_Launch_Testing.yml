@@ -18,7 +18,7 @@ jobs:
         run: > 
           dotnet test test/ShoppingApp.Tests --no-restore --verbosity normal --logger trx 
           --results-directory "IntegrationTestsResults"
-      - name: Run FSharp Integration Tests
+      - name: Run Integration Tests
         run: >
           dotnet test test/ShoppingApp.Tests.FSharp --no-restore --verbosity normal --logger trx
           --results-directory "IntegrationTestsResults"
