@@ -9,16 +9,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: dotnet restore ShoppingApp.sln
-      - name: Install ReSharper CLI
-        run: dotnet tool update -g JetBrains.ReSharper.GlobalTools
+        run: dotnet restore ShoppingApp.slnx
+      - name: Build_Solution
+        run: dotnet build ShoppingApp.slnx --configuration Release --no-restore
       - name: 'Inspect Code with ReSharper CLI'
         run: |
           export PATH=$PATH:/resharpercli
-          jb inspectcode ShoppingApp.sln -f="Html;Xml" --profile="ShoppingApp.sln.DotSettings" \
+          jb inspectcode ShoppingApp.slnx --no-build -f="Html;Xml" --profile="ShoppingApp.sln.DotSettings" \
             -o="inspect-code-output" --properties:Configuration=$buildConfiguration
       - name: 'Analyze ReSharper CLI Results'
         shell: pwsh
         run: ./AnalyzeReSharperCLIResults.ps1
-      - name: Build_Solution
-        run: dotnet build ShoppingApp.sln --configuration Release --no-restore

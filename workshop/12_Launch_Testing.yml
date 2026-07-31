@@ -11,12 +11,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: dotnet restore ShoppingApp.sln
+        run: dotnet restore ShoppingApp.slnx
       - name: Build_Solution
-        run: dotnet build ShoppingApp.sln --configuration Release --no-restore
+        run: dotnet build ShoppingApp.slnx --configuration Release --no-restore
       - name: Run Integration Tests
         run: > 
           dotnet test test/ShoppingApp.Tests --no-restore --verbosity normal --logger trx 
+          --results-directory "IntegrationTestsResults"
+      - name: Run FSharp Integration Tests
+        run: >
+          dotnet test test/ShoppingApp.Tests.FSharp --no-restore --verbosity normal --logger trx
           --results-directory "IntegrationTestsResults"
       - uses: actions/upload-artifact@v3
         with:
@@ -172,14 +176,8 @@ jobs:
       webUiCaUrl: ${{ needs.Provision_Staging_Infrastructure.outputs.webUiCaUrl }}
     steps:
       - uses: actions/checkout@v3
-      - name:  Create a manifest file
-        run: dotnet new tool-manifest
-      - name: Install Playwright CLI
-        run: dotnet tool install Microsoft.Playwright.CLI
       - name: Build ShoppingApp.E2ETests
         run: dotnet build test/ShoppingApp.E2ETests
-      - name: Install Playwright
-        run: dotnet tool run playwright install
       - name: Run E2E Tests
         run: |
           dotnet test test/ShoppingApp.E2ETests \
