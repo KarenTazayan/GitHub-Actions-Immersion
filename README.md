@@ -50,22 +50,22 @@ git clone https://github.com/DevOpsImmersion/github-actions-immersion-1.git
 and interop with it from Ubuntu-24.04 by the following way:
 ```
 $ cd /mnt/c/Repos/github-actions-immersion-1/build/self-hosted-runners/debian-12.x/
-$ sudo docker build -t github-actions-runner-debian-12.12:31072026 .
+$ sudo docker build -t github-actions-runner-debian-12.12:28082026 .
 ```
 
 ### 3. Create a self-hosted runner.
 
 Build a runner docker image by using files from "build\self-hosted-runners" based on Debian image
 ```
-$ sudo docker build -t github-actions-runner-debian-12.12:31072026 .
+$ sudo docker build -t github-actions-runner-debian-12.12:28082026 .
 ```
 or on Ubuntu image.
 ```
-$ sudo docker build -t github-actions-runner-ubuntu-24.04:31072026 .
+$ sudo docker build -t github-actions-runner-ubuntu-24.04:28082026 .
 ```
 Also create Playwright image
 ```
-$ sudo docker build -t github-actions-runner-playwright-1.x:1.61.0.31072026 .
+$ sudo docker build -t github-actions-runner-playwright-1.x:1.61.0.28082026 .
 ```
 Create [Fine-grained personal access token](https://github.com/settings/tokens). Or if you use an organization please 
 install [GitHub CLI](https://cli.github.com/) and [use the following script](https://docs.github.com/en/rest/actions/self-hosted-runners?apiVersion=2022-11-28#create-a-registration-token-for-an-organization):
@@ -87,7 +87,7 @@ sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
     --group-add $SOCKET_GID \
     -e GITHUB_ORG_URL=https://github.com/<organization name> \
     -e GITHUB_RUNNER_NAME=01_Debian-12.12 \
-    -e GITHUB_ORG_TOKEN=<TOKEN> --name 01_Debian-12.12 github-actions-runner-debian-12.12:31072026
+    -e GITHUB_ORG_TOKEN=<TOKEN> --name 01_Debian-12.12 github-actions-runner-debian-12.12:28082026
 ```
 The syntax above uses Bash. If you use PowerShell shell, just replace "\\" (backslash) with "`" (backtick).  
   
