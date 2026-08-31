@@ -11,14 +11,6 @@ jobs:
       - name: Build_Solution
         run: dotnet build ShoppingApp.slnx --configuration Release --no-restore
       - name: Run Integration Tests
-        run: > 
-          dotnet test test/ShoppingApp.Tests --no-restore --verbosity normal --logger trx 
-          --results-directory "IntegrationTestsResults"
+        run: dotnet run --project test/ShoppingApp.Tests
       - name: Run FSharp Integration Tests
-        run: >
-          dotnet test test/ShoppingApp.Tests.FSharp --no-restore --verbosity normal --logger trx
-          --results-directory "IntegrationTestsResults"
-      - uses: actions/upload-artifact@v3
-        with:
-          name: Integration Tests Results
-          path: IntegrationTestsResults
+        run: dotnet run --project test/ShoppingApp.Tests.FSharp
