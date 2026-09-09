@@ -21,8 +21,7 @@ RUN add-apt-repository ppa:dotnet/backports && \
 WORKDIR /acr
 
 # Create u1 user and set up home directory
-RUN useradd -m -d /home/u1 u1 && \
-    chown -R u1:u1 /acr /home/u1
+RUN useradd -m -d /home/u1 u1
 
 # Download the latest runner package
 RUN curl -o actions-runner-linux-x64-2.321.0.tar.gz \
@@ -33,7 +32,8 @@ RUN curl -o actions-runner-linux-x64-2.321.0.tar.gz \
 COPY ./start.sh .
 RUN chmod +x start.sh
 
-# Switch to the u1 user
+# Ensure u1 owns everything (runner files were extracted as root) before dropping privileges
+RUN chown -R u1:u1 /acr /home/u1
 USER u1
 
 ENTRYPOINT [ "./start.sh" ]
