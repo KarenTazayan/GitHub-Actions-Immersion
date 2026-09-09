@@ -361,8 +361,7 @@ resource siloHostCa 'Microsoft.App/containerApps@2025-07-01' = {
       scale: {
         minReplicas: 1
         maxReplicas: 4
-      rules: []
-      }
+        rules: []
       }
     }
   }
@@ -416,9 +415,10 @@ resource webUiCa 'Microsoft.App/containerApps@2025-07-01' = {
               value: 'DefaultEndpointsProtocol=https;AccountName=${storageName};AccountKey=${listKeys(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', storageName), '2019-04-01').keys[0].value};EndpointSuffix=core.windows.net'
             }
             {
-                name: 'AZURE_SIGNALR_CONNECTION_STRING'
-                value: signalR.listKeys().primaryConnectionString
-            }            {
+              name: 'AZURE_SIGNALR_CONNECTION_STRING'
+              value: signalR.listKeys().primaryConnectionString
+            }
+            {
               name: 'APPINSIGHTS_CONNECTION_STRING'
               value: appi.properties.ConnectionString
             }
