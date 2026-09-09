@@ -1,6 +1,6 @@
 ## GitHub Actions Immersion
 
-This guidline provide detailed steps to orgnize fully automated GitHub Actions workflows for a sample solution based on the Blazor Server model, which operates on .NET 8 and Microsoft Orleans 8. It predominantly utilizes the following services: Azure Container Apps, Azure SignalR Service, Azure Key Vault, Azure Storage Account, Azure Application Insights, Azure Load Testing, Azure DevOps, and many more.
+This guideline provides detailed steps to organize fully automated GitHub Actions workflows for a sample solution based on the Blazor Server model, which operates on .NET 10 and Microsoft Orleans 10. It predominantly utilizes the following services: Azure Container Apps, Azure SignalR Service, Azure Key Vault, Azure Storage Account, Azure Application Insights, Azure Load Testing, Azure DevOps, and many more.
 
 What is required for this solution?  
 > - Microsoft Azure Subscription, [you can create a free account](https://azure.microsoft.com/en-us/free/) if you don't have any.
@@ -18,7 +18,7 @@ Install [Docker Desktop](https://docs.docker.com/desktop/install/windows-install
 
 >Attention! The steps outlined below, up to section 3, are optional
 
-If you are using Windows 11 or Windows 10 it is more appropriate to use WSL 2 and install Docker Desktop on Ubuntu-22.04. Here 
+If you are using Windows 11 or Windows 10 it is more appropriate to use WSL 2 and install Docker Desktop on Ubuntu-24.04. Here 
 we have two options:
 
 - The first option is to use WSL 2 on the host operationg system.
@@ -28,23 +28,13 @@ we have two options:
 >   - Windows Server 2022/Windows 11 or greater AMD EPYC/Ryzen processor
 > - Enable [nested virtualization](https://learn.microsoft.com/en-us/windows/wsl/faq#can-i-run-wsl-2-in-a-virtual-machine-) on the Virtual Machine
 
-Regardless of the option you chose above, you need to open a terminal on the host (for the first option) or on the VM (for the second option). Then enable WSL 2 and install Ubuntu 22.04 with the following command, typing it in the terminal window:
+Regardless of the option you chose above, you need to open a terminal on the host (for the first option) or on the VM (for the second option). Then enable WSL 2 and install Ubuntu 24.04 with the following command, typing it in the terminal window:
 ```
-wsl --install -d Ubuntu-22.04
+wsl --install -d Ubuntu-24.04 --name GHA_Ubuntu-24.04
 ```
 Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/) on Ubuntu.
 ```
-$ sudo apt-get update
-$ sudo apt-get install ca-certificates curl
-$ sudo install -m 0755 -d /etc/apt/keyrings
-$ sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-$ sudo chmod a+r /etc/apt/keyrings/docker.asc
-$ echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-$ sudo apt-get update
-$ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo apt-get update && sudo apt-get install -y ca-certificates curl && sudo install -m 0755 -d /etc/apt/keyrings && sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc && sudo chmod a+r /etc/apt/keyrings/docker.asc && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && sudo apt-get update && sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 Start Docker service.
 ```
@@ -57,21 +47,25 @@ mkdir C:\Repos
 cd C:\Repos
 git clone https://github.com/DevOpsImmersion/github-actions-immersion-1.git
 ```
-and interop with it from Ubuntu-22.04 by the following way:
+and interop with it from Ubuntu-24.04 by the following way:
 ```
 $ cd /mnt/c/Repos/github-actions-immersion-1/build/self-hosted-runners/debian-12.x/
-$ sudo docker build -t github-actions-runner-debian-12.7:29112024 .
+$ sudo docker build -t github-actions-runner-debian-12.12:28082026 .
 ```
 
 ### 3. Create a self-hosted runner.
 
 Build a runner docker image by using files from "build\self-hosted-runners" based on Debian image
 ```
-$ sudo docker build -t github-actions-runner-debian-12.7:29112024 .
+$ sudo docker build -t github-actions-runner-debian-12.12:28082026 .
 ```
-or on Playwright image.
+or on Ubuntu image.
 ```
-$ sudo docker build -t github-actions-runner-playwright-1.x:1.49.0.29112024 .
+$ sudo docker build -t github-actions-runner-ubuntu-24.04:28082026 .
+```
+Also create Playwright image
+```
+$ sudo docker build -t github-actions-runner-playwright-1.x:1.61.0.28082026 .
 ```
 Create [Fine-grained personal access token](https://github.com/settings/tokens). Or if you use an organization please 
 install [GitHub CLI](https://cli.github.com/) and [use the following script](https://docs.github.com/en/rest/actions/self-hosted-runners?apiVersion=2022-11-28#create-a-registration-token-for-an-organization):
@@ -86,14 +80,16 @@ Bash
 gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" \
   /orgs/PUT_YOUR_ORG_NAME_HERE/actions/runners/registration-token
 ```
-Run Debian or Playwright based runner by using the following command:
+Run Debian or Ubuntu based runner by using the following command:
 ```
-sudo docker run -v /var/run/docker.sock:/var/run/docker.sock \
+SOCKET_GID=$(stat -c '%g' /var/run/docker.sock)
+sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+    --group-add $SOCKET_GID \
     -e GITHUB_ORG_URL=https://github.com/<organization name> \
-    -e GITHUB_RUNNER_NAME=01_Debian-12.7 \
-    -e GITHUB_ORG_TOKEN=<TOKEN> --name 01_Debian-12.7 github-actions-runner-debian-12.7:29112024
+    -e GITHUB_RUNNER_NAME=01_Debian-12.12 \
+    -e GITHUB_ORG_TOKEN=<TOKEN> --name 01_Debian-12.12 github-actions-runner-debian-12.12:28082026
 ```
-The syntax above uses PowerShell. If you use Bash shell, just replace "`" (backtick) with "\\" (backslash).  
+The syntax above uses Bash. If you use PowerShell shell, just replace "\\" (backslash) with "`" (backtick).  
   
 >Warning! Doing Docker within a Docker by using Docker socket has serious security implications. The code inside the container can now run as root on your Docker host. Please be very careful.
 

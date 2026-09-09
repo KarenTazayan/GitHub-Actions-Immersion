@@ -17,19 +17,15 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
       - name: Install dependencies
-        run: dotnet restore ShoppingApp.sln
+        run: dotnet restore ShoppingApp.slnx
       - name: Build_Solution
-        run: dotnet build ShoppingApp.sln --configuration Release --no-restore
+        run: dotnet build ShoppingApp.slnx --configuration Release --no-restore
       - name: Run Integration Tests
-        run: > 
-          dotnet test test/ShoppingApp.Tests --no-restore --verbosity normal --logger trx 
-          --results-directory "IntegrationTestsResults"
-      - uses: actions/upload-artifact@v3
-        with:
-          name: Integration Tests Results
-          path: IntegrationTestsResults
+        run: dotnet run --project test/ShoppingApp.Tests
+      - name: Run FSharp Integration Tests
+        run: dotnet run --project test/ShoppingApp.Tests.FSharp
       # Packing Infrastructure Artifacts Stage
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: infrastructure
           path: ${{ github.workspace }}/**/deploy/azure-container-apps
@@ -46,7 +42,7 @@ jobs:
       acrResourceGroupName: ${{ env.resourceGroupName }}
       acrUrl: ${{ steps.step1.outputs.acrUrl }}
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: 'infrastructure'
           path: ${{ github.workspace }}/infrastructure

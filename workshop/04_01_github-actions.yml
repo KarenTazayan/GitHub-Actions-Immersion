@@ -7,6 +7,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: dotnet restore ShoppingApp.sln
+        run: dotnet restore ShoppingApp.slnx
       - name: Build_Solution
-        run: dotnet build ShoppingApp.sln --configuration Release --no-restore
+        run: dotnet build ShoppingApp.slnx --configuration Release --no-restore
