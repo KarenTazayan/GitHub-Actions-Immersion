@@ -2,7 +2,6 @@ FROM ubuntu:24.04
 
 ENV TARGETARCH=linux-x64
 ENV GITHUB_RUNNER_LABELS="azure-cli,dotnet,resharper-cli"
-ENV GITHUB_RUNNER_GROUP="Default"
 ENV GITHUB_RUNNER_WORKDIR="_work"
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -55,9 +54,9 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
 WORKDIR /acr
 
 # Download the latest runner package
-RUN curl -o actions-runner-linux-x64-2.321.0.tar.gz \
-  -L https://github.com/actions/runner/releases/download/v2.321.0/actions-runner-linux-x64-2.321.0.tar.gz && \
-  tar xzf ./actions-runner-linux-x64-2.321.0.tar.gz
+RUN curl -o actions-runner-linux-x64-2.337.0.tar.gz \
+    -L https://github.com/actions/runner/releases/download/v2.337.0/actions-runner-linux-x64-2.337.0.tar.gz && \
+    tar xzf ./actions-runner-linux-x64-2.337.0.tar.gz
 
 # Run a self-hosted GitHub Actions runner in Docker
 COPY ./start.sh .

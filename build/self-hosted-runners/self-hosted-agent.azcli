@@ -10,6 +10,7 @@ SOCKET_GID=$(stat -c '%g' /var/run/docker.sock)
 sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
     --group-add $SOCKET_GID \
     -e GITHUB_ORG_URL=https://github.com/<organization name> \
+    -e GITHUB_RUNNER_GROUP="Default" \
     -e GITHUB_RUNNER_NAME=01_Ubuntu-24.04 \
     -e GITHUB_ORG_TOKEN=<TOKEN> --name 01_Ubuntu-24.04 github-actions-runner-ubuntu-24.04:28082026
 
@@ -21,11 +22,13 @@ SOCKET_GID=$(stat -c '%g' /var/run/docker.sock)
 sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
     --group-add $SOCKET_GID \
     -e GITHUB_ORG_URL=https://github.com/<organization name> \
+    -e GITHUB_RUNNER_GROUP="Default" \
     -e GITHUB_RUNNER_NAME=01_Debian-12.12 \
     -e GITHUB_ORG_TOKEN=<TOKEN> --name 01_Debian-12.12 github-actions-runner-debian-12.12:28082026
 
 # Bash Syntax
 sudo docker run \
     -e GITHUB_ORG_URL=https://github.com/<organization name> \
+    -e GITHUB_RUNNER_GROUP="Default" \
     -e GITHUB_RUNNER_NAME=01_Playwright-1.61.0 \
     -e GITHUB_ORG_TOKEN=<TOKEN> --name 01_Playwright-1.61.0 github-actions-runner-playwright-1.x:1.61.0.28082026

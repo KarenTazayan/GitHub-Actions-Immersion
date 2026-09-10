@@ -86,6 +86,7 @@ SOCKET_GID=$(stat -c '%g' /var/run/docker.sock)
 sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
     --group-add $SOCKET_GID \
     -e GITHUB_ORG_URL=https://github.com/<organization name> \
+    -e GITHUB_RUNNER_GROUP="Default" \
     -e GITHUB_RUNNER_NAME=01_Debian-12.12 \
     -e GITHUB_ORG_TOKEN=<TOKEN> --name 01_Debian-12.12 github-actions-runner-debian-12.12:28082026
 ```
